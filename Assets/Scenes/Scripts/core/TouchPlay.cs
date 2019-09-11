@@ -10,8 +10,17 @@ public class TouchPlay : MonoBehaviour
     public BoxCollider BoxCollider;
     public Transform MapBoxRoot;
 
+    public Transform min, max;
+
+    public static TouchPlay Instance;
+
+    public Prop Prop;
+
     private void Awake()
     {
+
+        Instance = this;
+
         //---
 
         //EasyTouch.On_TouchStart += On_TouchStart;
@@ -52,29 +61,37 @@ public class TouchPlay : MonoBehaviour
     //---
     #region DRAG
 
-    MapBox box_start, box_end;
+    MapBox_TypeOne box_start, box_end;
 
     private void On_DragStart(Gesture gesture)
     {
         var currrent_obj = gesture.GetCurrentPickedObject();
-        box_start = currrent_obj?.GetComponent<MapBox>();
-        print("On_DragStart : pick obj is " + currrent_obj + " | Pos : "+box_start.Pos);
+        if (currrent_obj != null)
+        {
+            box_start = currrent_obj?.GetComponent<MapBox_TypeOne>();
+            print("On_DragStart : pick obj is " + currrent_obj + " | Pos : " + box_start.Pos);
+        }
+
     }
 
     private void On_Drag(Gesture gesture)
     {
         var currrent_obj = gesture.GetCurrentPickedObject();
-        //print("On_Drag : pick obj is " + currrent_obj);
-        box_end = currrent_obj?.GetComponent<MapBox>();
-        CreatArea(box_start,box_end);
+        box_end = currrent_obj?.GetComponent<MapBox_TypeOne>();
+        CreatArea(box_start, box_end);
+        CaliculateBoxsInArea();
     }
 
     private void On_DragEnd(Gesture gesture)
     {
         var currrent_obj = gesture.GetCurrentPickedObject();
-        box_end = currrent_obj?.GetComponent<MapBox>();
-        CreatArea(box_start, box_end);
-        print("On_DragEnd : pick obj is " + currrent_obj+" | Pos : "+box_end.Pos);
+        if (currrent_obj != null)
+        {
+            box_end = currrent_obj?.GetComponent<MapBox_TypeOne>();
+            CreatArea(box_start, box_end);
+            CaliculateBoxsInArea();
+            print("On_DragEnd : pick obj is " + currrent_obj + " | Pos : " + box_end.Pos);
+        }
     }
     #endregion
     //---
@@ -95,46 +112,61 @@ public class TouchPlay : MonoBehaviour
     #endregion
     //---
 
+    #region Collider
 
-    private void CreatArea(MapBox start_box,MapBox end_box)
+    public void SetAreaColliderBoundsSize(MapBox_TypeOne start_box, MapBox_TypeOne end_box)
     {
-        if (start_box == null || end_box == null) return;
-        Vector3 data = end_box.Pos - start_box.Pos;
-        data = start_box.Pos + data*0.5f;
-        BoxCollider.transform.position = data;
+        var bounds = BoxCollider.bounds;
+        bounds.SetMinMax(start_box.Pos, end_box.Pos);
 
-        var scale_matrix = Math.Sqrt(Vector3.Distance(start_box.Pos,end_box.Pos));
-        print("data pos : " + scale_matrix);
+        BoxCollider.transform.position = bounds.center;
+        BoxCollider.transform.localScale = bounds.size;
 
-        CalculateAreaBoxs(start_box,end_box);
-        //BoxCollider.transform.localScale = Vector3.one * (float)scale_matrix;
-        
+        bounds.center = Vector3.zero;
+        bounds.size = Vector3.one;
+    }
 
+    #endregion
+
+
+
+
+    private void CreatArea(MapBox_TypeOne start_box, MapBox_TypeOne end_box)
+    {
+        SetAreaColliderBoundsSize(start_box, end_box);
     }
 
 
-    private void CalculateAreaBoxs(MapBox start_box,MapBox end_box)
+    private void CaliculateBoxsInArea()
     {
-        float min_x = start_box.Pos.x < end_box.Pos.x ? start_box.Pos.x : end_box.Pos.x;
-        float min_y = start_box.Pos.y > end_box.Pos.y ? end_box.Pos.y : start_box.Pos.y;
-        float max_x= start_box.Pos.x < end_box.Pos.x ? end_box.Pos.x : start_box.Pos.x;
-        float max_y=start_box.Pos.y > end_box.Pos.y ? start_box.Pos.y : end_box.Pos.y;
-        
         for (int i = 0; i < MapBoxRoot.childCount; i++)
         {
-            MapBox mapBox = MapBoxRoot.GetChild(i).GetComponent<MapBox>();
-            if (!(mapBox.Pos.x<min_x||mapBox.Pos.x>max_x||mapBox.Pos.y<min_y||mapBox.Pos.y>max_y))
+            Box box = MapBoxRoot.GetChild(i).GetComponent<Box>();
+
+            if (CheckIntersects(box.BoxCollider.bounds))
             {
-                Debug.LogFormat("InArea : {0}", mapBox.name);
+                box.Swipe_In();
+            }
+            else
+            {
+                box.Swipe_Out();
             }
         }
     }
 
 
-    private bool CheckSingleBoxInCurrentArea(MapBox boxPos)
+
+    private bool CheckSingleBoxInCurrentArea(MapBox_TypeOne boxPos)
     {
         var bounds = BoxCollider.bounds;
         return bounds.Contains(boxPos.Pos);
+    }
+
+    private bool CheckIntersects(Bounds bounds)
+    {
+        var _bounds = BoxCollider.bounds;
+        return _bounds.Intersects(bounds);
+
     }
 
 }
