@@ -359,6 +359,9 @@
     <Reference Include="UnityEditor.Purchasing">
       <HintPath>H:/MyGitHub/TouchBox/Library/PackageCache/com.unity.purchasing@2.0.6/Editor/UnityEditor.Purchasing.dll</HintPath>
     </Reference>
+    <Reference Include="JsonFx.Json">
+      <HintPath>H:/MyGitHub/TouchBox/Assets/Plugins/JsonFx.Json.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>H:/MyGitHub/TouchBox/Library/PackageCache/com.unity.ext.nunit@1.0.0/net35/unity-custom/nunit.framework.dll</HintPath>
     </Reference>
