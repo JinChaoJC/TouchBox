@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-interface IInterface
+public interface IPropExecute
 {
-
+    void PropExecute(Box attach_box);
 }
+
+

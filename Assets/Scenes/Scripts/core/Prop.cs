@@ -6,10 +6,25 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 
-public abstract class Prop : MonoBehaviour
+public abstract class Prop : IPropExecute
 {
-    internal virtual void PropShow() { }
-    internal virtual void PropHidden() { }
+    public Prop() { }
 
+    //internal abstract  void PropShow();
+    //internal abstract void PropHidden();
+    public abstract void PropExecute(Box attach_box);
+    public abstract void Clear();
+
+
+    internal GameObject attach_prop_clone;
+}
+
+public enum PropType
+{
+    PoTao,
+    Watermeion,
+    Remove,
+    Inversion,
+    none
 }
 
